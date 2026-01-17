@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spam Detector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+    }
+
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+
+    p.subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #cbd5f5;
+      resize: none;
+      font-size: 15px;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #2563eb;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #2563eb;
+      color: #ffffff;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    #result {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+
+    .spam {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .ham {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .loading {
+      background: #e0e7ff;
+      color: #1e40af;
+    }
+
+    footer {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Spam Detector</h1>
+    <p class="subtitle">Machine Learning based message classifier</p>
+
+    <textarea id="text" placeholder="Type or paste a message here..."></textarea>
+
+    <button onclick="checkSpam()">Check Message</button>
+
+    <div id="result"></div>
+
+    <footer>
+      Powered by ML API
+      Created by ImmWretch
+    </footer>
+  </div>
+
+  <script>
+    function checkSpam() {
+      const message = document.getElementById("text").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!message) {
+        resultDiv.style.display = "block";
+        resultDiv.className = "loading";
+        resultDiv.innerText = "Please enter a message.";
+        return;
+      }
+
+      resultDiv.style.display = "block";
+      resultDiv.className = "loading";
+      resultDiv.innerText = "Checking message...";
+
+      fetch("https://online-ml-app.onrender.com/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text: message })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.result === "SPAM") {
+          resultDiv.className = "spam";
+          resultDiv.innerText = "🚫 SPAM MESSAGE";
+        } else {
+          resultDiv.className = "ham";
+          resultDiv.innerText = "✅ NOT SPAM (HAM)";
+        }
+      })
+      .catch(err => {
+        resultDiv.className = "spam";
+        resultDiv.innerText = "Error connecting to server";
+      });
+    }
+
+    // Service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
+</body>
+</html>
